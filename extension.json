@@ -1,0 +1,60 @@
+{
+	"name": "GloopFiles",
+	"author": [
+		"Jonas Doggart"
+	],
+	"url": "https://meta.weirdgloop.org",
+	"descriptionmsg": "gloopfiles-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "media",
+	"requires": {
+		"MediaWiki": ">= 1.31.0"
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\GloopFiles\\": "includes/"
+	},
+	"config": {
+		"GloopFilesConfig": {
+			"width": 500,
+			"height": 500
+		}
+	},
+	"Hooks": {
+		"MimeMagicInit": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onMimeMagicInit",
+		"ImageOpenShowImageInlineBefore": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onImageOpenShowImageInlineBefore",
+		"ImagePageFileHistoryLine": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onImagePageFileHistoryLine",
+		"BeforePageDisplay": "MediaWiki\\Extensions\\GloopFiles\\Hooks::pageOutputHook",
+		"RejectParserCacheValue": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onRejectParserCacheValue",
+		"ImageBeforeProduceHTML": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onImageBeforeProduceHTML"
+	},
+	"MediaHandlers": {
+		"application/vnd.marmoset": "MediaWiki\\Extensions\\GloopFiles\\MarmosetHandler"
+	},
+	"MessagesDirs": {
+		"GloopFiles": [
+			"i18n"
+		]
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources",
+		"remoteExtPath": "GloopFiles/resources"
+	},
+	"ResourceModules": {
+		"ext.gloopfiles.marmoset": {
+			"dependencies": [],
+			"messages": [],
+			"styles": [
+				"marmoset/ext.gloopfiles.marmoset.less"
+			],
+			"scripts": [
+				"marmoset/marmoset.js",
+				"marmoset/ext.gloopfiles.marmoset.js"
+			],
+			"targets": [
+				"mobile",
+				"desktop"
+			]
+		}
+	},
+	"manifest_version": 1
+}

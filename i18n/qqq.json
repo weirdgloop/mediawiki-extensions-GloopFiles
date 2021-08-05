@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jonas Doggart"
+		]
+	},
+	"boilerplate-desc": "{{desc|name=GloopFiles|url=https://meta.weirdgloop.org}}",
+	"gloopfiles-mview-alt": "Text to display in place of 3D model while JS starts or if it fails. $1 is the file name."
+}

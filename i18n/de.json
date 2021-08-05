@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jonas Doggart"
+		]
+	},
+	"gloopfiles-desc": "Unterstützt folgende weitere Datei arten:\n.mview - Marmoset 3D Szenen",
+	"gloopfiles-mview-alt": "[[:File:$1|File:$1]] Wartet auf js oder ein fehler mit dem js ist aufgetreten."
+}
