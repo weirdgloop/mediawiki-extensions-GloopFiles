@@ -38,8 +38,7 @@
 		"ImageOpenShowImageInlineBefore": "main",
 		"ImagePageFileHistoryLine": "main",
 		"BeforePageDisplay": "main",
-		"RejectParserCacheValue": "main",
-		"ImageBeforeProduceHTML": "main"
+		"RejectParserCacheValue": "main"
 	},
 	"HookHandlers": {
 		"main": {

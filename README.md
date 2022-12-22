@@ -41,6 +41,7 @@ The viewer object is a global named `mw.gloopfiles_mview` and has the following 
 
 
 ## Configuration
+As with any other extension install and use it by uploading it to the extensions directory and adding `wfLoadExtension( 'GloopFiles' );` to your settings.
 
 ### Default size of viewer
 ```php
@@ -61,6 +62,13 @@ $wgGloopFilesViewerConfig = [
 	'userinterface' => true,	// Defaul to having a visible user interface
 	'overrideui' => true		// Allow overriding the UI per page
 ];
+```
+
+
+### File upload
+Do not forget too add `.mview` as an allowed upload file type:
+```php
+$wgFileExtensions[] = 'mview';
 ```
 
 
