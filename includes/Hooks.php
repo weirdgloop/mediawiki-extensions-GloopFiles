@@ -17,7 +17,7 @@
  * @file
  */
 
-namespace MediaWiki\Extension\GloopFiles;
+namespace MediaWiki\Extensions\GloopFiles;
 
 use MediaWiki\MediaWikiServices;
 use Language;
@@ -29,9 +29,12 @@ class Hooks {
      * @param  MimeAnalyzer $mime
      * @return null
      */
-    public static function onMimeMagicInit( $mime ) {
-        $mime->addExtraInfo( 'application/vnd.marmoset' );
-        $mime->addExtraTypes( 'application/vnd.marmoset [3D]' );
+    public function onMimeMagicInit( $mime ) {
+        $mime->addExtraTypes( 'application/vnd.marmoset mview' );
+        $mime->addExtraTypes( 'application/sla mview' );
+        $mime->addExtraTypes( 'application/octet-stream mview' );
+        $mime->addExtraInfo( 'application/vnd.marmoset application/sla application/octet-stream [3D]' );
+        return true;
     }
 
     /**
@@ -39,7 +42,7 @@ class Hooks {
      * @param OutputPage $out the output for this imagepage
      * @return bool
      */
-    public static function onImageOpenShowImageInlineBefore( ImagePage $imagePage, OutputPage $out ) {
+    public function onImageOpenShowImageInlineBefore( \ImagePage $imagePage, \OutputPage $out ) {
         $file = $imagePage->getDisplayedFile();
         return self::onImagePageHooks( $file, $out );
     }
@@ -51,7 +54,7 @@ class Hooks {
      * @param string &$css the CSS class of the history line
      * @return bool
      */
-    public static function onImagePageFileHistoryLine( $imagePage, $file, &$line, &$css ) {
+    public function onImagePageFileHistoryLine( $imagePage, $file, &$line, &$css ) {
         $out = $imagePage->getContext()->getOutput();
         return self::onImagePageHooks( $file, $out );
     }
@@ -61,17 +64,16 @@ class Hooks {
      * @param OutputPage $out the output to which this file is being rendered
      * @return bool
      */
-    private static function onImagePageHooks( $file, $out ) {
+    private function onImagePageHooks( $file, $out ) {
         $handler = $file->getHandler();
         if ( $handler !== false && $handler instanceof MarmosetHandler ) {
-            //$parserOutput->addModuleStyles( 'ext.gloopfiles.marmoset.styles' );
-            $parserOutput->addModules( 'ext.gloopfiles.marmoset' );
+            $out->addModules( ['ext.gloopfiles.mviewer'] );
         }
         return true;
     }
 
     /**
-     * Add JavaScript and CSS for special pages that may include timed mview
+     * Add JavaScript and CSS for special pages that may include mview
      * files but which will not fire the parser hook.
      *
      * FIXME: There ought to be a better interface for determining whether the
@@ -81,7 +83,8 @@ class Hooks {
      * @param Skin $sk
      * @return bool
      */
-    public static function pageOutputHook( OutputPage $out, Skin $sk ) {
+    // public function onBeforePageDisplay ( \OutputPage $out, \Skin $sk ) {
+    public function onBeforePageDisplay ( $out, $sk ) {
         $title = $out->getTitle();
         $namespace = $title->getNamespace();
         $addModules = false;
@@ -100,8 +103,7 @@ class Hooks {
         }
 
         if ( $addModules ) {
-            //$parserOutput->addModuleStyles( 'ext.gloopfiles.marmoset.styles' );
-            $parserOutput->addModules( 'ext.gloopfiles.marmoset' );
+            $out->addModules( 'ext.gloopfiles.mviewer' );
         }
 
         return true;
@@ -114,109 +116,11 @@ class Hooks {
      * @param ParserOutput $parserOptions
      * @return bool
      */
-    public static function onRejectParserCacheValue( $parserOutput, $wikiPage, $parserOptions ) {
+    public function onRejectParserCacheValue( $parserOutput, $wikiPage, $parserOptions ) {
         if ( $parserOutput->getExtensionData( 'mw_ext_GF_hasMarmoset' ) &&
-            !in_array( 'ext.gloopfiles.marmoset', $parserOutput->getModules() ) ) {
+            !in_array( 'ext.gloopfiles.mviewer', $parserOutput->getModules() ) ) {
             return false;
         }
-        return true;
-    }
-
-    /**
-     * Called before producing the HTML created by a wiki image insertion
-     * @param  DummyLinker &$dummy
-     * @param  Title &$title
-     * @param  File|bool &$file
-     * @param  array &$frameParams Associative array of parameters external to the media handler.
-     * @param  array &$handlerParams Associative array of media handler parameters
-     * @param  string|bool &$time
-     * @param  string &$res Final HTML output
-     * @return [type]                 [description]
-     */
-    public static function onImageBeforeProduceHTML (&$dummy, &$title, &$file, &$frameParams, &$handlerParams, &$time, &$res) {
-        global $wgGloopFilesConfig;
-        if ( $file ) {
-            if ( $file->getMimeType() === "application/vnd.marmoset" ) {
-                global $wgSVGMaxSize;
-                $attr = [
-                    'class' => [ 'gf-mview' ],
-                    'style' => ""
-                ];
-                $inAttr = [
-                    'class' => [ 'gf-mview-loader' ],
-                    'style' => ""
-                ];
-
-                $page = $handlerParams['page'] ?? false;
-
-                if ( isset( $handlerParams['width'] ) and (int) $handlerParams['width']  ) {
-                    $width = (int) $handlerParams['width'];
-
-                    if ( isset( $handlerParams['height'] ) and (int) $handlerParams['height']  ) {
-                        $height = (int) $handlerParams['height'];
-                    } else {
-                        $height = (int) $wgGloopFilesConfig['height'] ?? 500;
-                    }
-
-                    if ( $width <= $height ) {
-                        if ( $width > $wgSVGMaxSize ) {
-                            $factor = $wgSVGMaxSize / $width;
-                            $width = $wgSVGMaxSize;
-                            $height = round( $height * $factor );
-                        }
-                    } else {
-                        if ( $height > $wgSVGMaxSize ) {
-                            $factor = $wgSVGMaxSize / $height;
-                            $height = $wgSVGMaxSize;
-                            $width = round( $width * $factor );
-                        }
-                    }
-
-                    $attr['style'] = $attr['style'] . "width: {$width}px;";
-                    $inAttr['style'] = $inAttr['style'] . "height: {$height}px;";
-                } else {
-                    $attr['class'][] = "gf-default-size";
-                }
-
-                if ( isset( $frameParams['class'] ) ) {
-                    $attr['class'][] = $frameParams['class'];
-                }
-
-                if ( isset( $frameParams['align'] ) ) {
-                    $attr['class'][] = "gf-frame-" . $frameParams['align'];
-                } else {
-                    $attr['class'][] = "gf-frame-center";
-                }
-
-                if ( isset( $frameParams['autostart'] ) ) {
-                    $inAttr['data-mview-autostart'] = 'true';
-                }
-
-                if ( isset( $frameParams['title'] ) ) {
-                  $attr['title'] = $frameParams['title'];
-                }
-
-                $pholder = "";
-                if ( isset( $frameParams['alt'] ) ) {
-                    $pholder = Html::element('span', [], $frameParams['alt']);
-                } else {
-                    $text = wfMessage( 'gloopfiles-mview-alt' )->params( $file->getTitle() )->parse();
-                    $pholder = Html::rawelement('span', [], $text);
-                }
-
-                $inAttr['data-mview-file'] = $file->getCanonicalUrl();
-                $inner = Html::rawElement('div', $inAttr, $pholder);
-
-                $caption = "";
-                if ( isset( $frameParams['caption'] ) ) {
-                    $caption = Html::rawElement('figcaption', [], $frameParams['caption']);
-                }
-
-                $res = Html::rawElement('figure', $attr, $inner . $caption);
-                return false;
-            }
-        }
-
         return true;
     }
 

@@ -1,4 +1,3 @@
-
 {
 	"@metadata": {
 		"authors": [
@@ -6,5 +5,8 @@
 		]
 	},
 	"gloopfiles-desc": "Adiciona suporte para os seguintes tipos de arquivo adicionais :\n.mview - Marmoset 3D cena",
-	"gloopfiles-mview-alt": "[[:File:$1|File:$1]] Esperando para executar o js ou ocorreu um problema ao carregar o js."
+	"gloopfiles-mview-alt": "[[:$1|$1]] Esperando para executar o js ou ocorreu um problema ao carregar o js.",
+	"gloopfiles-mview-invalid": "<i>GloopFiles: Extensão de arquivo inválida para o arquivo marmoset.</i>",
+	"gloopfiles-mview-short-desc": "Cena 3D ($1)",
+	"gloopfiles-mview-long-desc": "Cena 3D, tamanho do arquivo: $3, tipo MIME: $4"
 }

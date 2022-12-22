@@ -5,5 +5,8 @@
 		]
 	},
 	"boilerplate-desc": "{{desc|name=GloopFiles|url=https://meta.weirdgloop.org}}",
-	"gloopfiles-mview-alt": "Text to display in place of 3D model while JS starts or if it fails. $1 is the file name."
+	"gloopfiles-mview-alt": "Text to display in place of 3D model while JS starts or if it fails. $1 is the file name with namespace prefix.",
+	"gloopfiles-mview-invalid": "Text to display when src given is not an mview file.",
+	"gloopfiles-mview-short-desc": "Short description for mview files (used on search results). $1 is the file size while $2 and $3 are width and height.",
+	"gloopfiles-mview-long-desc": "Long descriptiono for mview files (used on file page). $1 and $2 are width and height, $3 is the file size and $4 is the mime type."
 }

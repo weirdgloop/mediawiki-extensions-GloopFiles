@@ -5,5 +5,8 @@
 		]
 	},
 	"gloopfiles-desc": "Adds support for the following additional file types:\n.mview - Marmoset 3D scenes",
-	"gloopfiles-mview-alt": "[[:File:$1|File:$1]] Waiting to run js or there was a problem loading the js."
+	"gloopfiles-mview-alt": "[[:$1|$1]] Waiting to run js or there was a problem loading the js.",
+	"gloopfiles-mview-invalid": "<i>GloopFiles: Invalid file extension for marmoset file.</i>",
+	"gloopfiles-mview-short-desc": "3D scene ($1)",
+	"gloopfiles-mview-long-desc": "3D scene, file size: $3, MIME type: $4"
 }

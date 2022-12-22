@@ -1,9 +1,4 @@
 <?php
-
-namespace MediaWiki\Extensions\GloopFiles;
-
-use MediaWiki\Shell\Shell;
-
 /**
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +17,12 @@ use MediaWiki\Shell\Shell;
  * @file
  */
 
+namespace MediaWiki\Extensions\GloopFiles;
+
+use File;
+use MediaHandler;
+use MediaWiki\Shell\Shell;
+
 class MarmosetHandler extends MediaHandler {
     public const MVIEW_METADATA_VERSION = 1;
 
@@ -34,6 +35,8 @@ class MarmosetHandler extends MediaHandler {
             'img_height' => 'height',
             'model_autostart' => 'autostart',
             'img_thumb' => 'thumbnailurl',
+            'img_bg' => 'background',
+            'img_ui' => 'userinterface'
         ];
     }
 
@@ -49,12 +52,14 @@ class MarmosetHandler extends MediaHandler {
             } else {
              return true;
             }
-        } elseif ( in_array( $name, [ 'autostart', 'thumbnailurl' ] ) ) {
+        } elseif ( $name == 'thumbnailurl' ) {
             if ( mb_strlen(trim( $value )) > 0 ) {
                 return true;
             } else {
                 return false;
             }
+        } elseif ( in_array( $name, [ 'autostart', 'background', 'userinterface' ] ) ) {
+            return true;
         } else {
             return false;
         }
@@ -65,7 +70,7 @@ class MarmosetHandler extends MediaHandler {
      * @return string
      */
     public function makeParamString( $params ) {
-        return '';
+        return ''; // width/height don't matter to model
     }
 
     /**
@@ -73,7 +78,7 @@ class MarmosetHandler extends MediaHandler {
      * @return array|bool
      */
     public function parseParamString( $str ) {
-        return false;
+        return false; // nothing too parse, see makeParamString above
     }
 
     /**
@@ -104,6 +109,15 @@ class MarmosetHandler extends MediaHandler {
             }
         }
 
+        $params['autostart'] = isset( $params['autostart'] );
+        global $wgGloopFilesViewerConfig;
+        if ( $wgGloopFilesViewerConfig['overridebg'] === true ) {
+            $params['background'] = isset( $params['background'] );
+        }
+        if ( $wgGloopFilesViewerConfig['overrideui'] === true ) {
+            $params['userinterface'] = isset( $params['userinterface'] );
+        }
+
         return true;
     }
 
@@ -111,16 +125,16 @@ class MarmosetHandler extends MediaHandler {
      * @param \File $file
      * @param string $path Unused
      * @param bool|array $metadata
-     * @return array
+     * @return array|false
      */
-    public function getImageSize( $file, $path, $metadata = false ) {
+    public function getImageSize( $file = null, $path = '', $metadata = false ) {
         global $wgGloopFilesConfig;
         $size = [ 500, 500 ];
 
-        if ( (int) $wgGloopFilesConfig["width"] and (int) $wgGloopFilesConfig["width"] > 0 ) {
+        if ( (int) $wgGloopFilesConfig["width"] AND (int) $wgGloopFilesConfig["width"] > 0 ) {
             $size[0] = (int) $wgGloopFilesConfig["width"];
         }
-        if ( (int) $wgGloopFilesConfig["height"] and (int) $wgGloopFilesConfig["height"] > 0 ) {
+        if ( (int) $wgGloopFilesConfig["height"] AND (int) $wgGloopFilesConfig["height"] > 0 ) {
             $size[1] = (int) $wgGloopFilesConfig["height"];
         }
 
@@ -133,23 +147,30 @@ class MarmosetHandler extends MediaHandler {
      * @return array
      */
     public function getSizeAndMetadata( $state, $filename ) {
+        /**
         global $wgGloopFilesConfig;
         $width = 500;
         $height = 500;
 
-        if ( (int) $wgGloopFilesConfig["width"] and (int) $wgGloopFilesConfig["width"] > 0 ) {
+        if ( (int) $wgGloopFilesConfig["width"] AND (int) $wgGloopFilesConfig["width"] > 0 ) {
             $width = (int) $wgGloopFilesConfig["width"];
         }
-        if ( (int) $wgGloopFilesConfig["height"] and (int) $wgGloopFilesConfig["height"] > 0 ) {
+        if ( (int) $wgGloopFilesConfig["height"] AND (int) $wgGloopFilesConfig["height"] > 0 ) {
             $height = (int) $wgGloopFilesConfig["height"];
         }
+         */
+        $size = $this->getImageSize();
 
         return [
-            'width' => $width,
-            'height' => $height,
+            //'width' => $width,
+            'width' => $size[0],
+            //'height' => $height,
+            'height' => $size[1],
             'metadata' => [
-                'width' => $width,
-                'height' => $height,
+                //'width' => $width,
+                'width' => $size[0],
+                //'height' => $height,
+                'height' => $size[1],
                 'version' => self::MVIEW_METADATA_VERSION
             ]
         ];
@@ -161,9 +182,11 @@ class MarmosetHandler extends MediaHandler {
      * @return array
      */
     public function getMetadata( $image, $path ) {
+        $size = $this->getImageSize();
+
         return serialize( [
-            'width' => 500,
-            'height' => 500,
+            'width' => $size[0],
+            'height' => $size[1],
             'version' => self::MVIEW_METADATA_VERSION
         ] );
     }
@@ -205,16 +228,17 @@ class MarmosetHandler extends MediaHandler {
      * Get a MediaTransformOutput object representing the transformed output. Does the
      * transform unless $flags contains self::TRANSFORM_LATER.
      *
-     * @param File $image
+     * @param File $file
      * @param string $dstPath Filesystem destination path
      * @param string $dstUrl Destination URL to use in output HTML
      * @param array $params Arbitrary set of parameters validated by $this->validateParam()
      *   Note: These parameters have *not* gone through $this->normaliseParams()
      * @param int $flags A bitfield, may contain self::TRANSFORM_LATER
-     * @return MediaTransformOutput
+     * @return MarmosetOutputRenderer
      */
-    public function doTransform( $image, $dstPath, $dstUrl, $params, $flags = 0 ) {
-        // Is needed?
+    public function doTransform( $file, $dstPath, $dstUrl, $params, $flags = 0 ) {
+        $this->normaliseParams($file, $params);
+        return new MarmosetOutputRenderer( $file, $params );
     }
 
     /**
@@ -231,15 +255,15 @@ class MarmosetHandler extends MediaHandler {
 
     /**
      * @param File $file
-     * @return bool
+     * @return bool True if the handled types can be transformed.
      */
     public function canRender( $file ) {
-        return false;
+        return true;
     }
 
     /**
      * @param File $file
-     * @return bool
+     * @return bool True if handled types cannot be displayed directly in a browser but can be rendered.
      */
     public function mustRender( $file ) {
         return true;
@@ -247,7 +271,7 @@ class MarmosetHandler extends MediaHandler {
 
     /**
      * @param File $file
-     * @return bool
+     * @return bool The material is vectorized and thus scaling is lossless.
      */
     public function isVectorized( $file ) {
         return true;
@@ -255,7 +279,7 @@ class MarmosetHandler extends MediaHandler {
 
     /**
      * @param File $file
-     * @return bool
+     * @return bool The material is an image, and is animated.
      */
     public function isAnimatedImage( $file ) {
         return true;
@@ -270,7 +294,7 @@ class MarmosetHandler extends MediaHandler {
     }
 
     /**
-     * @return bool
+     * @return bool False if the handler is disabled for all files.
      */
     public function isEnabled() {
         return true;
@@ -287,6 +311,7 @@ class MarmosetHandler extends MediaHandler {
     /**
      * TODO: Metadata stuff.
      * Use Jpeg -> first part of file (which is thumb) appears to use jpeg type metadata/format
+     * Maybe also use dimensions of thumb for width/height instead of dummy size?
      * 
      * @see https://doc.wikimedia.org/mediawiki-core/master/php/JpegHandler_8php_source.html#l00103
      * @see https://doc.wikimedia.org/mediawiki-core/master/php/BitmapMetadataHandler_8php_source.html#l00163
@@ -296,15 +321,33 @@ class MarmosetHandler extends MediaHandler {
      * @see https://doc.wikimedia.org/mediawiki-core/master/php/ImageHandler_8php_source.html#l00240
      */
     
+    /**
+     * Short description. Shown on Special:Search results.
+     *
+     * @access public
+     * @param  \File $file
+     * @return string
+     */
+    public function getShortDesc($file) {
+        global $wgLang;
+        $size = $this->getImageSize();
+        return wfMessage('gloopfiles-mview-short-desc', $wgLang->formatSize($file->getSize()), $size[0], $size[1])->text();
+    }
 
     /**
-     * TODO: Description funtions
-     * @see https://github.com/wikimedia/mediawiki/blob/master/includes/media/MediaHandler.php
-     * @see https://doc.wikimedia.org/mediawiki-core/master/php/MediaHandler_8php_source.html#l00817
+     * Long description. Shown under image on image description page surounded by ().
+     *
+     * @access public
+     * @param  \File $file
+     * @return string
      */
-    //public function getShortDesc( $file )
-    //public function getLongDesc( $file )
-    
+    public function getLongDesc($file) {
+        global $wgLang;
+        $size = $this->getImageSize();
+        return wfMessage( 'gloopfiles-mview-long-desc' )->numParams( $size[0], $size[1] )->sizeParams( $file->getSize() )
+            ->params( '<span class="mime-type">' . $file->getMimeType() . '</span>' )->parse();
+    }
+
     /**
      * Shown in file history box on image description page.
      *
@@ -312,8 +355,9 @@ class MarmosetHandler extends MediaHandler {
      * @return string Dimensions
      */
     public function getDimensionsString( $file ) {
+        $size = $this->getImageSize();
         return wfMessage( 'widthheight' )
-            ->numParams( $file->getWidth(), $file->getHeight() )->text();
+            ->numParams( $size[0], $size[1] )->text();
     }
 
     /**
@@ -332,8 +376,7 @@ class MarmosetHandler extends MediaHandler {
             return;
         }
 
-        //$parserOutput->addModuleStyles( 'ext.gloopfiles.marmoset.styles' );
-        $parserOutput->addModules( 'ext.gloopfiles.marmoset' );
+        $parserOutput->addModules( ['ext.gloopfiles.mviewer'] );
         $parserOutput->setExtensionData( 'mw_ext_GF_hasMarmoset', true );
     }
 }

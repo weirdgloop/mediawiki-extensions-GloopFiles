@@ -8,47 +8,90 @@
 	"license-name": "GPL-2.0-or-later",
 	"type": "media",
 	"requires": {
-		"MediaWiki": ">= 1.31.0"
+		"MediaWiki": ">= 1.35.0"
 	},
 	"AutoloadNamespaces": {
-		"MediaWiki\\Extension\\GloopFiles\\": "includes/"
+		"MediaWiki\\Extensions\\GloopFiles\\": "includes/"
 	},
 	"config": {
 		"GloopFilesConfig": {
-			"width": 500,
-			"height": 500
+			"descrption": "3D Mview file config",
+			"value": {
+				"width": 500,
+				"height": 500
+			}
+		},
+		"GloopFilesViewerConfig": {
+			"descrption": "Configuration for the Mview viewer",
+			"value": {
+				"autolimit": 2,
+				"activelimit": 5,
+				"transparent": true,
+				"overridebg": true,
+				"userinterface": true,
+				"overrideui": true
+			}
 		}
 	},
 	"Hooks": {
-		"MimeMagicInit": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onMimeMagicInit",
-		"ImageOpenShowImageInlineBefore": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onImageOpenShowImageInlineBefore",
-		"ImagePageFileHistoryLine": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onImagePageFileHistoryLine",
-		"BeforePageDisplay": "MediaWiki\\Extensions\\GloopFiles\\Hooks::pageOutputHook",
-		"RejectParserCacheValue": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onRejectParserCacheValue",
-		"ImageBeforeProduceHTML": "MediaWiki\\Extensions\\GloopFiles\\Hooks::onImageBeforeProduceHTML"
+		"MimeMagicInit": "main",
+		"ImageOpenShowImageInlineBefore": "main",
+		"ImagePageFileHistoryLine": "main",
+		"BeforePageDisplay": "main",
+		"RejectParserCacheValue": "main",
+		"ImageBeforeProduceHTML": "main"
+	},
+	"HookHandlers": {
+		"main": {
+			"class": "MediaWiki\\Extensions\\GloopFiles\\Hooks"
+		}
 	},
 	"MediaHandlers": {
-		"application/vnd.marmoset": "MediaWiki\\Extensions\\GloopFiles\\MarmosetHandler"
+		"application/vnd.marmoset": "MediaWiki\\Extensions\\GloopFiles\\MarmosetHandler",
+		"application/octet-stream": "MediaWiki\\Extensions\\GloopFiles\\MarmosetHandler"
 	},
 	"MessagesDirs": {
 		"GloopFiles": [
 			"i18n"
 		]
 	},
+	"ExtensionMessagesFiles": {
+		"GloopFilesMagic": "i18n/GloopFiles.i18n.magic.php"
+	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "resources",
 		"remoteExtPath": "GloopFiles/resources"
 	},
 	"ResourceModules": {
+		"ext.gloopfiles": {
+			"class": "MediaWiki\\Extensions\\GloopFiles\\DataModule"
+		},
 		"ext.gloopfiles.marmoset": {
 			"dependencies": [],
 			"messages": [],
+			"styles": [],
+			"scripts": [
+				"external/marmoset.js"
+			],
+			"targets": [
+				"mobile",
+				"desktop"
+			]
+		},
+		"ext.gloopfiles.mviewer": {
+			"dependencies": [
+				"ext.gloopfiles",
+				"ext.gloopfiles.marmoset",
+				"mediawiki.jqueryMsg"
+			],
+			"messages": [
+				"gloopfiles-mview-invalid"
+			],
 			"styles": [
-				"marmoset/ext.gloopfiles.marmoset.less"
+				"mviewer/ext.gloopfiles.mviewer.less"
 			],
 			"scripts": [
-				"marmoset/marmoset.js",
-				"marmoset/ext.gloopfiles.marmoset.js"
+				"mviewer/ext.gloopfiles.mviewer.js"
 			],
 			"targets": [
 				"mobile",
@@ -56,5 +99,5 @@
 			]
 		}
 	},
-	"manifest_version": 1
+	"manifest_version": 2
 }
