@@ -1,7 +1,8 @@
 {
 	"name": "GloopFiles",
 	"author": [
-		"Jonas Doggart"
+		"Jonas Doggart",
+		"[https://github.com/jayktaylor Jayden Bailey]"
 	],
 	"url": "https://meta.weirdgloop.org",
 	"descriptionmsg": "gloopfiles-desc",
@@ -15,14 +16,14 @@
 	},
 	"config": {
 		"GloopFilesConfig": {
-			"descrption": "3D Mview file config",
+			"description": "3D Mview file config",
 			"value": {
 				"width": 500,
 				"height": 500
 			}
 		},
 		"GloopFilesViewerConfig": {
-			"descrption": "Configuration for the Mview viewer",
+			"description": "Configuration for the Mview viewer",
 			"value": {
 				"autolimit": 2,
 				"activelimit": 5,
@@ -31,6 +32,10 @@
 				"userinterface": true,
 				"overrideui": true
 			}
+		},
+		"GloopFilesEnableUploads": {
+			"description": "Whether to enable uploads for .mview files",
+			"value": true
 		}
 	},
 	"Hooks": {
@@ -61,6 +66,9 @@
 		"localBasePath": "resources",
 		"remoteExtPath": "GloopFiles/resources"
 	},
+	"ExtensionFunctions": [
+		"MediaWiki\\Extensions\\GloopFiles\\Hooks::setup"
+	],
 	"ResourceModules": {
 		"ext.gloopfiles": {
 			"class": "MediaWiki\\Extensions\\GloopFiles\\DataModule"

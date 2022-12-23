@@ -24,6 +24,13 @@ use Language;
 
 class Hooks {
 
+    public static function setup(): void {
+        global $wgFileExtensions, $wgGloopFilesEnableUploads;
+        if ( $wgGloopFilesEnableUploads === true ) {
+            $wgFileExtensions[] = 'mview';
+        }
+    }
+
     /**
      * @see https://www.mediawiki.org/wiki/Manual:Hooks/MimeMagicInit
      * @param  MimeAnalyzer $mime

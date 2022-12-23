@@ -51,7 +51,6 @@ $wgGloopFilesConfig = [
 ];
 ```
 
-
 ### Viewer settings
 ```php
 $wgGloopFilesViewerConfig = [
@@ -64,13 +63,12 @@ $wgGloopFilesViewerConfig = [
 ];
 ```
 
+### Disable uploads
+By default, the extension enables uploads for `.mview` files. You can disable this behaviour by setting:
 
-### File upload
-Do not forget too add `.mview` as an allowed upload file type:
 ```php
-$wgFileExtensions[] = 'mview';
+$wgGloopFilesEnableUploads = false;
 ```
-
 
 ## Known issues
 * Currently not compatible with slideshow type galleries - would require a major rework of the slideshow js.
