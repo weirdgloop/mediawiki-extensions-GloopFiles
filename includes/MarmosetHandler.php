@@ -19,8 +19,8 @@
 
 namespace MediaWiki\Extensions\GloopFiles;
 
-use File;
 use MediaHandler;
+use MediaWiki\FileRepo\File\File;
 use MediaWiki\Shell\Shell;
 
 class MarmosetHandler extends MediaHandler {

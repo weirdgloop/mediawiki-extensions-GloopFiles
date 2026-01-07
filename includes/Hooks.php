@@ -19,8 +19,8 @@
 
 namespace MediaWiki\Extensions\GloopFiles;
 
+use MediaWiki\Language\Language;
 use MediaWiki\MediaWikiServices;
-use Language;
 
 class Hooks {
 

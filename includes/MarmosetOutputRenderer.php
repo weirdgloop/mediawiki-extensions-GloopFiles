@@ -19,8 +19,8 @@
 
 namespace MediaWiki\Extensions\GloopFiles;
 
-use Html;
 use MediaTransformOutput;
+use MediaWiki\MediaWiki\Html;
 
 class MarmosetOutputRenderer extends MediaTransformOutput {
 
